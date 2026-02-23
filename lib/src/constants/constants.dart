@@ -4,7 +4,7 @@
 
 import 'package:photo_manager/photo_manager.dart' show ThumbnailSize;
 
-const packageName = 'wechat_assets_picker';
+const String packageName = 'munto_assets_picker';
 
 const int defaultAssetsPerPage = 80;
 const int defaultMaxAssetsCount = 9;
