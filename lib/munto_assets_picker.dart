@@ -19,6 +19,7 @@ export 'src/delegates/asset_picker_viewer_builder_delegate.dart';
 export 'src/delegates/sort_path_delegate.dart';
 export 'src/models/path_wrapper.dart';
 export 'src/munto_image_picker_helper.dart';
+export 'src/models/special_item.dart';
 export 'src/provider/asset_picker_provider.dart';
 export 'src/provider/asset_picker_viewer_provider.dart';
 export 'src/widget/asset_picker.dart';
