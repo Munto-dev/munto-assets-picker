@@ -1365,6 +1365,11 @@ class DefaultAssetPickerBuilderDelegate<T extends DefaultAssetPickerProvider>
         if (totalCount == 0 && data.loaded > 0) {
           totalCount = data.loaded;
         }
+        // 최신 사진이 아래에 오도록 뒤집은 그리드의 위치(anchor)·빈칸 계산도 같은 개수를 써야, 사진 수가
+        // 아직 비어 있어도 사진이 위쪽에 붙어 보이지 않는다.
+        final layoutWrapper = (wrapper?.assetCount ?? 0) == 0 && data.loaded > 0
+            ? wrapper?.copyWith(assetCount: data.loaded)
+            : wrapper;
         final specialItemsFinalized = assetsGridSpecialItemsFinalized(
           context: context,
           path: wrapper?.path,
@@ -1388,7 +1393,7 @@ class DefaultAssetPickerBuilderDelegate<T extends DefaultAssetPickerProvider>
           // Then we use the [totalCount] to calculate placeholders we need.
           final placeholderCount = assetsGridItemPlaceholderCount(
             context: context,
-            pathWrapper: wrapper,
+            pathWrapper: layoutWrapper,
             onlyOneScreen: onlyOneScreen,
             specialItemsFinalized: specialItemsFinalized,
           );
@@ -1464,7 +1469,7 @@ class DefaultAssetPickerBuilderDelegate<T extends DefaultAssetPickerProvider>
             final double anchor = assetGridAnchor(
               context: context,
               constraints: constraints,
-              pathWrapper: wrapper,
+              pathWrapper: layoutWrapper,
               specialItemsFinalized: specialItemsFinalized,
             );
 

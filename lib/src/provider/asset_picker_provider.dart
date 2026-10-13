@@ -2,7 +2,7 @@
 // Use of this source code is governed by an Apache license that can be found
 // in the LICENSE file.
 
-import 'dart:async' show Completer;
+import 'dart:async' show Completer, unawaited;
 import 'dart:io' as io show Platform;
 import 'dart:math' as math show max;
 import 'dart:typed_data' show Uint8List;
@@ -478,6 +478,11 @@ class DefaultAssetPickerProvider
     }
     path ??= _currentPath!;
     _currentPath = path;
+    // [CLS-382] 앨범별 개수 조회는 순차 대기열이라 뒤쪽 앨범은 한참 뒤에 채워진다. 아직 사진 수를 모르는
+    // 앨범으로 전환했다면 대기열을 기다리지 않고 바로 조회한다.
+    if (path.assetCount == null) {
+      unawaited(getAssetCountFromPath(path));
+    }
     await getAssetsFromCurrentPath();
   }
 
