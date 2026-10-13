@@ -390,12 +390,18 @@ class DefaultAssetPickerProvider
     // Sort path using sort path delegate.
     Singleton.sortPathDelegate.sort(_paths);
     // Populate fields to paths without awaiting.
-    for (final path in _paths) {
-      Future(() async {
+    // [CLS-382] 모든 앨범의 개수·썸네일 요청을 한꺼번에 보내면 사진 라이브러리(PhotoKit 등) 처리 큐가 막혀
+    // 첫 화면 로딩과 앨범 전환(첫 페이지 조회)이 그 뒤에서 오래 기다린다. 한 번에 하나씩 요청한다.
+    final pathsSnapshot = List<PathWrapper<AssetPathEntity>>.of(_paths);
+    Future(() async {
+      for (final path in pathsSnapshot) {
+        if (!_mounted) {
+          return;
+        }
         await getAssetCountFromPath(path);
         await getThumbnailFromPath(path);
-      });
-    }
+      }
+    });
 
     // Set first path entity as current path entity.
     if (_paths.isNotEmpty) {
@@ -528,12 +534,13 @@ class DefaultAssetPickerProvider
 
   Future<void> getAssetCountFromPath(PathWrapper<AssetPathEntity> path) async {
     final int assetCount = await path.path.assetCountAsync;
+    // [CLS-382] 앨범 목록이 다시 만들어지는 사이 값이 버려지지 않도록 객체 비교(`==`)가 아닌 ID로 찾는다.
     final int index = _paths.indexWhere(
-      (PathWrapper<AssetPathEntity> p) => p == path,
+      (PathWrapper<AssetPathEntity> p) => p.path.id == path.path.id,
     );
     if (index != -1) {
       _paths[index] = _paths[index].copyWith(assetCount: assetCount);
-      if (index == 0) {
+      if (_currentPath?.path.id == path.path.id) {
         _currentPath = _currentPath?.copyWith(assetCount: assetCount);
       }
       notifyListeners();

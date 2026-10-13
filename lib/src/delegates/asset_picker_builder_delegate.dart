@@ -1354,11 +1354,17 @@ class DefaultAssetPickerBuilderDelegate<T extends DefaultAssetPickerProvider>
     appBarPreferredSize ??= appBar(context).preferredSize;
     final bool gridRevert = effectiveShouldRevertGrid(context);
     final accessibleNavigation = MediaQuery.accessibleNavigationOf(context);
-    return Selector<T, PathWrapper<AssetPathEntity>?>(
-      selector: (_, T p) => p.currentPath,
-      builder: (context, wrapper, _) {
+    return Selector<T, ({PathWrapper<AssetPathEntity>? wrapper, int loaded})>(
+      selector: (_, T p) => (wrapper: p.currentPath, loaded: p.currentAssets.length),
+      builder: (context, data, _) {
+        final wrapper = data.wrapper;
         // First, we need the count of the assets.
         int totalCount = wrapper?.assetCount ?? 0;
+        // [CLS-382] 앨범 사진 수 조회(`assetCountAsync`)가 아직 안 끝났어도 이미 불러온 사진이 있으면
+        // 로딩 표시 대신 그리드를 보여준다. 사진이 매우 많은 앨범에서는 이 조회가 수 초 걸린다.
+        if (totalCount == 0 && data.loaded > 0) {
+          totalCount = data.loaded;
+        }
         final specialItemsFinalized = assetsGridSpecialItemsFinalized(
           context: context,
           path: wrapper?.path,
