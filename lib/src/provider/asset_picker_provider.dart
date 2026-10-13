@@ -538,17 +538,30 @@ class DefaultAssetPickerProvider
   }
 
   Future<void> getAssetCountFromPath(PathWrapper<AssetPathEntity> path) async {
-    final int assetCount = await path.path.assetCountAsync;
-    // [CLS-382] 앨범 목록이 다시 만들어지는 사이 값이 버려지지 않도록 객체 비교(`==`)가 아닌 ID로 찾는다.
-    final int index = _paths.indexWhere(
-      (PathWrapper<AssetPathEntity> p) => p.path.id == path.path.id,
-    );
-    if (index != -1) {
-      _paths[index] = _paths[index].copyWith(assetCount: assetCount);
-      if (_currentPath?.path.id == path.path.id) {
-        _currentPath = _currentPath?.copyWith(assetCount: assetCount);
+    // [CLS-382] 한 앨범의 개수 조회가 실패해도 순차 루프(`getPaths`)가 끊겨 뒤쪽 앨범이 비어 있지 않도록,
+    // `getThumbnailFromPath`처럼 예외를 삼키고 기록만 한다.
+    try {
+      final int assetCount = await path.path.assetCountAsync;
+      // [CLS-382] 앨범 목록이 다시 만들어지는 사이 값이 버려지지 않도록 객체 비교(`==`)가 아닌 ID로 찾는다.
+      final int index = _paths.indexWhere(
+        (PathWrapper<AssetPathEntity> p) => p.path.id == path.path.id,
+      );
+      if (index != -1) {
+        _paths[index] = _paths[index].copyWith(assetCount: assetCount);
+        if (_currentPath?.path.id == path.path.id) {
+          _currentPath = _currentPath?.copyWith(assetCount: assetCount);
+        }
+        notifyListeners();
       }
-      notifyListeners();
+    } catch (e, s) {
+      FlutterError.presentError(
+        FlutterErrorDetails(
+          exception: e,
+          stack: s,
+          library: packageName,
+          silent: true,
+        ),
+      );
     }
   }
 
