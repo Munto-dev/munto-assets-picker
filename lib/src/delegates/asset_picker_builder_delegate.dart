@@ -1355,7 +1355,8 @@ class DefaultAssetPickerBuilderDelegate<T extends DefaultAssetPickerProvider>
     final bool gridRevert = effectiveShouldRevertGrid(context);
     final accessibleNavigation = MediaQuery.accessibleNavigationOf(context);
     return Selector<T, ({PathWrapper<AssetPathEntity>? wrapper, int loaded})>(
-      selector: (_, T p) => (wrapper: p.currentPath, loaded: p.currentAssets.length),
+      selector: (_, T p) =>
+          (wrapper: p.currentPath, loaded: p.currentAssets.length),
       builder: (context, data, _) {
         final wrapper = data.wrapper;
         // First, we need the count of the assets.
